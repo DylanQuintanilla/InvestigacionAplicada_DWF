@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import sv.edu.udb.InvestigacionDwf.security.jwt.JwtAuthFilter;
+import sv.edu.udb.InvestigacionDwf.repository.UserRepository;
+import sv.edu.udb.InvestigacionDwf.service.impl.UserServiceImpl;
 
 @Configuration
 @EnableWebSecurity
@@ -20,9 +22,11 @@ import sv.edu.udb.InvestigacionDwf.security.jwt.JwtAuthFilter;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final UserRepository userRepository; // Inyección de dependencia
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, UserRepository userRepository) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.userRepository = userRepository; // Asignar el repositorio
     }
 
     @Bean
@@ -43,6 +47,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    public UserServiceImpl userDetailsService() {
+        return new UserServiceImpl(userRepository); // Pasar el repositorio al constructor
+    }
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -53,4 +62,5 @@ public class SecurityConfig {
                 .build();
     }
 }
+
 

@@ -36,8 +36,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String register(RegisterRequest registerRequest) {
-        if (userRepository.existsByUsername(registerRequest.getUsername())) {
-            logger.error("El usuario ya existe: {}", registerRequest.getUsername());
+        if (userRepository.existsByUsername(registerRequest.getName())) {
+            logger.error("El usuario ya existe: {}", registerRequest.getName());
             throw new UserAlreadyExistException("El usuario ya existe");
         }
 
@@ -46,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new RuntimeException("Rol ROLE_USER no encontrado"));
 
         User user = new User();
-        user.setUsername(registerRequest.getUsername());
+        user.setUsername(registerRequest.getName());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setEmail(registerRequest.getEmail());
 
@@ -59,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user); // Persistir el usuario
 
-        logger.info("Usuario registrado: {}", registerRequest.getUsername());
+        logger.info("Usuario registrado: {}", registerRequest.getName());
 
         return token; // Devolver el token generado
     }
@@ -69,14 +69,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String login(LoginRequest loginRequest) {
-        User user = userRepository.findByUsername(loginRequest.getUsername())
+        User user = userRepository.findByUsername(loginRequest.getEmail())
                 .orElseThrow(() -> {
-                    logger.error("Usuario no encontrado: {}", loginRequest.getUsername());
+                    logger.error("Usuario no encontrado: {}", loginRequest.getEmail());
                     return new RuntimeException("Usuario no encontrado");
                 });
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            logger.error("Credenciales inválidas para el usuario: {}", loginRequest.getUsername());
+            logger.error("Credenciales inválidas para el usuario: {}", loginRequest.getEmail());
             throw new RuntimeException("Credenciales inválidas");
         }
 
@@ -90,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
         user.setToken(token);
         userRepository.save(user); // Actualizar el token del usuario
 
-        logger.info("Usuario autenticado exitosamente: {}", loginRequest.getUsername());
+        logger.info("Usuario autenticado exitosamente: {}", loginRequest.getEmail());
 
         return token; // Devolver el token generado
     }
